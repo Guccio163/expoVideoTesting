@@ -45,29 +45,29 @@ export default function HomeScreen() {
         allowsFullscreen
         style={{ height: 300, width: 300 }}
         player={videoPlayer}
+        // 38968
         // in expo-av nativeControls regarded non-fullscreen player - fullscreen mode always
         // displayed native controls (impossible to exit on some platforms without it)
         nativeControls={controlsEnabled}
         ref={videoRef}
         playsInline
+        // 38972
         // makes googleapis videos' audio work, potentially other origins as well, but only
         // when server has CORS enabled and accepts OPTIONS methods (CORS with preflight)
-        // crossOrigin="anonymous"
+        // doesn't work with sourceURLs 2-4
+        crossOrigin="anonymous"
         onFullscreenEnter={() => {
-          console.log("onFullscreenEnter");
           setControlsEnabled(true);
         }}
         onFullscreenExit={() => setControlsEnabled(false)}
       />
       <Pressable
         onPressIn={() => {
-          setControlsEnabled(true);
+          // 38968
           // makes nativeControls enabling work on mobile-web android (not recommended)
           // opening fullscreen on custom native event when nativeControls are enabled works as well
-          // enterFullscreen();
-          setTimeout(() => {
-            enterFullscreen();
-          }, 100);
+          // setControlsEnabled(true);
+          enterFullscreen();
         }}
         style={{ backgroundColor: "magenta", width: 50, height: 50 }}
       >
