@@ -1,8 +1,13 @@
+import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
+import * as ImagePicker from "expo-image-picker";
+import { UIImagePickerPreferredAssetRepresentationMode } from "expo-image-picker";
 import { useVideoPlayer, VideoView } from "expo-video";
 import { useRef, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 
 export default function HomeScreen() {
+  // const [image, setImage] = useState(IMAGE);
+
   const videoRef = useRef<VideoView | null>(null);
   const [controlsEnabled, setControlsEnabled] = useState(false);
 
@@ -30,6 +35,33 @@ export default function HomeScreen() {
     // videoRef?.current?.enterFullscreen();
     const result = videoRef?.current?.enterFullscreen();
     result?.catch(() => {});
+  };
+
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 1,
+      // Makes sure photo isn't converted to more suitable format like png/jpg
+      preferredAssetRepresentationMode:
+        UIImagePickerPreferredAssetRepresentationMode.Current,
+    });
+
+    if (!result.canceled) {
+      const uri = result.assets[0].uri;
+      console.log("📸 URI zdjęcia z galerii:", uri);
+
+      const manipulated = await manipulateAsync(uri, [{ rotate: 90 }], {
+        compress: 1,
+        format: SaveFormat.JPEG,
+      }).catch((err) => {
+        console.log("❌ Błąd manipulateAsync:", JSON.stringify(err));
+      });
+      if (manipulated) {
+        console.log("✅ Nowy plik:", manipulated.uri);
+      }
+    } else {
+      console.log("Użytkownik anulował wybór");
+    }
   };
 
   return (
@@ -88,6 +120,15 @@ export default function HomeScreen() {
         style={{ backgroundColor: "yellow", width: 100, height: 50 }}
       >
         <Text>Controls Enabled: {JSON.stringify(controlsEnabled)}</Text>
+      </Pressable>
+      <Pressable
+        style={{ backgroundColor: "pink", width: 200, height: 150 }}
+        onPress={pickImage}
+      >
+        {/* <Image
+          source={{ uri: image.localUri || image.uri }}
+          style={{ width: 100, height: 100 }}
+        /> */}
       </Pressable>
     </View>
   );
