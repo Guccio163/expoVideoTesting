@@ -1,10 +1,14 @@
 import { useEvent, useEventListener } from "expo";
 import { useRouter } from "expo-router";
-import { useVideoPlayer, VideoView } from "expo-video";
+import {
+  StatusChangeEventPayload,
+  useVideoPlayer,
+  VideoView,
+} from "expo-video";
 import { useRef, useState } from "react";
 import { Button, Pressable, Text, View } from "react-native";
 
-export default function HomeScreen() {
+export default function SeparatePage() {
   const videoRef = useRef<VideoView | null>(null);
   const [controlsEnabled, setControlsEnabled] = useState(false);
 
@@ -24,7 +28,7 @@ export default function HomeScreen() {
   const sourceURL5 =
     "https://github.com/user-attachments/assets/2b502b64-83c3-4b81-bc7b-b57cf6892ab0";
 
-  const videoPlayer = useVideoPlayer(sourceURL5, (player) => {
+  const videoPlayer = useVideoPlayer(sourceURL4, (player) => {
     player.play();
   });
 
@@ -33,10 +37,43 @@ export default function HomeScreen() {
   });
 
   useEventListener(videoPlayer, "sourceLoad", (event) => {
+    alert("lol");
     alert(event.availableVideoTracks.at(0)?.mimeType);
   });
 
+  useEventListener(videoPlayer, "sourceLoad", (event) => {
+    alert(JSON.stringify(videoPlayer.videoTrack));
+
+    // alert(event.availableVideoTracks.at(0)?.mimeType);
+  });
+
   const router = useRouter();
+
+  useEventListener(
+    videoPlayer,
+    "statusChange",
+    (payload: StatusChangeEventPayload) => {
+      if (videoPlayer.videoTrack) {
+        alert(JSON.stringify(videoPlayer.videoTrack));
+      } else if (videoPlayer.availableVideoTracks.at(0)) {
+        alert(
+          `${payload.status} ||| ${JSON.stringify(
+            videoPlayer.availableVideoTracks
+          )}`
+        );
+        // playVideo();
+      } else {
+        alert("no xd");
+      }
+      if (payload.status === "readyToPlay") {
+        alert("everything ok");
+        // videoPlayer.play();
+      }
+      if (payload.status === "error") {
+        alert("error");
+      }
+    }
+  );
 
   const enterFullscreen = () => videoRef?.current?.enterFullscreen();
   return (
@@ -90,11 +127,7 @@ export default function HomeScreen() {
       >
         <Text>Controls Enabled: {JSON.stringify(controlsEnabled)}</Text>
       </Pressable>
-      <Button
-        title={"navigate"}
-        onPress={() => router.push("/separatePage")}
-        color="#841584"
-      />
+      <Button title={"navigate"} onPress={() => router.push("/separatePage")} />
     </View>
   );
 }
